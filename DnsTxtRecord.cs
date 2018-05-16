@@ -25,7 +25,7 @@ namespace DnsQuery
 
         private ReadOnlyCollection<string> txtEntries;
 
-        private DnsTxtRecord()
+        public DnsTxtRecord()
         {
         }
 

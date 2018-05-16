@@ -46,7 +46,7 @@ namespace DnsQuery
         /// <summary>port used on the target for the service.</summary>
         private int port;
 
-        private DnsSrvRecord()
+        public DnsSrvRecord()
         {
         }
 

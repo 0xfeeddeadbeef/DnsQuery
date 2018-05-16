@@ -38,6 +38,9 @@ namespace DnsQuery
         /// <summary>Win32 successful operation code.</summary>
         private const int ERROR_SUCCESS = 0;
 
+        // No records found for given DNS query.
+        private const int DNS_INFO_NO_RECORDS = 9501;
+
         /// <summary>
         /// Map type of DnsRecord to DnsRecordType.
         /// </summary>
@@ -107,6 +110,10 @@ namespace DnsQuery
                             yield return dnsRecord;
                         }
                     }
+                }
+                else if (errorCode == DNS_INFO_NO_RECORDS)
+                {
+                    yield break;
                 }
                 else
                 {

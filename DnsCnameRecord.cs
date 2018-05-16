@@ -17,7 +17,7 @@ namespace DnsQuery
     {
         private string nameHost;
 
-        private DnsCnameRecord()
+        public DnsCnameRecord()
         {
         }
 

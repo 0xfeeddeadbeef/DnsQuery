@@ -23,7 +23,7 @@ namespace DnsQuery
         private BigInteger numericIp6Address;
         private IPAddress ipAddress;
 
-        private DnsAAAARecord()
+        public DnsAAAARecord()
         {
         }
 

@@ -22,7 +22,7 @@ namespace DnsQuery
         private UInt32 numericIpAddress;
         private IPAddress ipAddress;
 
-        private DnsARecord()
+        public DnsARecord()
         {
         }
 

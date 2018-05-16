@@ -23,7 +23,7 @@ namespace DnsQuery
         private UInt32 expire;
         private UInt32 defaultTtl;
 
-        private DnsSoaRecord()
+        public DnsSoaRecord()
         {
         }
 
