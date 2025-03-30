@@ -1,13 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <RuntimeIdentifiers>win-x86;win-x64</RuntimeIdentifiers>
-        <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
-        <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
-        <RootNamespace>DnsQuery</RootNamespace>
-        <AssemblyName>DnsQuery</AssemblyName>
-        <FileAlignment>4096</FileAlignment>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <LangVersion>latest</LangVersion>
-    </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+		<Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+		<RootNamespace>DnsQuery</RootNamespace>
+		<AssemblyName>DnsQuery</AssemblyName>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<LangVersion>latest</LangVersion>
+		<Nullable>enable</Nullable>
+		<Features>$(Features);strict</Features>
+		<NoWarn>$(NoWarn);CA2118;IDE0079</NoWarn>
+	</PropertyGroup>
 </Project>

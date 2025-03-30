@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Exchange Web Services Managed API
  *
  * Copyright (c) Microsoft Corporation
@@ -23,59 +23,58 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-namespace DnsQuery
+namespace DnsQuery;
+
+using System;
+
+/// <summary>
+/// Represents a DNS Record.
+/// </summary>
+public abstract class DnsRecord
 {
-    using System;
+    /// <summary>
+    /// Name field of this DNS Record.
+    /// </summary>
+    private string? name;
 
     /// <summary>
-    /// Represents a DNS Record.
+    /// The suggested time for this dnsRecord to be valid.
     /// </summary>
-    public abstract class DnsRecord
+    private uint timeToLive;
+
+    /// <summary>
+    /// Loads the DNS dnsRecord.
+    /// </summary>
+    /// <param name="header">The header.</param>
+    /// <param name="dataPointer">The data pointer.</param>
+    internal virtual void Load(DnsRecordHeader header, IntPtr dataPointer)
     {
-        /// <summary>
-        /// Name field of this DNS Record.
-        /// </summary>
-        private string name;
+        this.name = header.Name;
+        this.timeToLive = Math.Max(1, header.Ttl);
+    }
 
-        /// <summary>
-        /// The suggested time for this dnsRecord to be valid.
-        /// </summary>
-        private uint timeToLive;
+    /// <summary>
+    /// Gets the type of the DnsRecord.
+    /// </summary>
+    /// <value>The type of the DnsRecord.</value>
+    internal abstract DnsRecordType RecordType
+    {
+        get;
+    }
 
-        /// <summary>
-        /// Loads the DNS dnsRecord.
-        /// </summary>
-        /// <param name="header">The header.</param>
-        /// <param name="dataPointer">The data pointer.</param>
-        internal virtual void Load(DnsRecordHeader header, IntPtr dataPointer)
-        {
-            this.name = header.Name;
-            this.timeToLive = Math.Max(1, header.Ttl);
-        }
+    /// <summary>
+    /// Name property
+    /// </summary>
+    public string? Name
+    {
+        get { return this.name; }
+    }
 
-        /// <summary>
-        /// Gets the type of the DnsRecord.
-        /// </summary>
-        /// <value>The type of the DnsRecord.</value>
-        internal abstract DnsRecordType RecordType
-        {
-            get;
-        }
-
-        /// <summary>
-        /// Name property
-        /// </summary>
-        public string Name
-        {
-            get { return this.name; }
-        }
-
-        /// <summary>
-        /// The suggested duration that this dnsRecord is valid
-        /// </summary>
-        public TimeSpan TimeToLive
-        {
-            get { return TimeSpan.FromSeconds((double)this.timeToLive); }
-        }
+    /// <summary>
+    /// The suggested duration that this dnsRecord is valid
+    /// </summary>
+    public TimeSpan TimeToLive
+    {
+        get { return TimeSpan.FromSeconds((double)this.timeToLive); }
     }
 }

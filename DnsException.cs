@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Exchange Web Services Managed API
  *
  * Copyright (c) Microsoft Corporation
@@ -23,24 +23,23 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-namespace DnsQuery
-{
-    using System;
-    using System.ComponentModel;
+namespace DnsQuery;
 
+using System;
+using System.ComponentModel;
+
+/// <summary>
+/// Represents an error that occurs when performing a DNS operation.
+/// </summary>
+[Serializable]
+public class DnsException : Win32Exception
+{
     /// <summary>
-    /// Represents an error that occurs when performing a DNS operation.
+    /// Initializes a new instance of the <see cref="DnsException"/> class.
     /// </summary>
-    [Serializable]
-    public class DnsException : Win32Exception
+    /// <param name="errorCode">The error code.</param>
+    internal DnsException(int errorCode)
+        : base(errorCode)
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DnsException"/> class.
-        /// </summary>
-        /// <param name="errorCode">The error code.</param>
-        internal DnsException(int errorCode)
-            : base(errorCode)
-        {
-        }
     }
 }

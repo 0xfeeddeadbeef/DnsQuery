@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Exchange Web Services Managed API
  *
  * Copyright (c) Microsoft Corporation
@@ -23,48 +23,47 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-namespace DnsQuery
+namespace DnsQuery;
+
+using System;
+using System.Runtime.InteropServices;
+
+/// <summary>
+///  Represents the native format of a DNS record returned by the Win32 DNS API
+/// </summary>
+[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+internal struct DnsRecordHeader
 {
-    using System;
-    using System.Runtime.InteropServices;
+    /// <summary>
+    /// Pointer to the next DNS dnsRecord.
+    /// </summary>
+    internal IntPtr NextRecord;
 
     /// <summary>
-    ///  Represents the native format of a DNS record returned by the Win32 DNS API
+    /// Domain name of the dnsRecord set to be updated.
     /// </summary>
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    internal struct DnsRecordHeader
-    {
-        /// <summary>
-        /// Pointer to the next DNS dnsRecord.
-        /// </summary>
-        internal IntPtr NextRecord;
+    internal string Name;
 
-        /// <summary>
-        /// Domain name of the dnsRecord set to be updated.
-        /// </summary>
-        internal string Name;
+    /// <summary>The type of the current dnsRecord.</summary>
+    internal DnsRecordType RecordType;
 
-        /// <summary>The type of the current dnsRecord.</summary>
-        internal DnsRecordType RecordType;
+    /// <summary>Length of the data, in bytes. </summary>
+    internal ushort DataLength;
 
-        /// <summary>Length of the data, in bytes. </summary>
-        internal ushort DataLength;
+    /// <summary>
+    /// Flags used in the structure, in the form of a bit-wise DWORD.
+    /// </summary>
+    internal uint Flags;
 
-        /// <summary>
-        /// Flags used in the structure, in the form of a bit-wise DWORD.
-        /// </summary>
-        internal uint Flags;
+    /// <summary>
+    /// Time to live, in seconds
+    /// </summary>
+    internal uint Ttl;
 
-        /// <summary>
-        /// Time to live, in seconds
-        /// </summary>
-        internal uint Ttl;
+    /// <summary>
+    /// Reserved for future use.
+    /// </summary>
+    internal uint Reserved;
 
-        /// <summary>
-        /// Reserved for future use.
-        /// </summary>
-        internal uint Reserved;
-
-        internal static readonly int SizeOf = Marshal.SizeOf<DnsRecordHeader>();
-    }
+    internal static readonly int SizeOf = Marshal.SizeOf<DnsRecordHeader>();
 }

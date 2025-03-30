@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Exchange Web Services Managed API
  *
  * Copyright (c) Microsoft Corporation
@@ -23,109 +23,113 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-namespace DnsQuery
+namespace DnsQuery;
+
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Runtime.InteropServices;
+
+/// <summary>
+/// DNS Query client.
+/// </summary>
+public static class DnsClient
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-    using System.Runtime.InteropServices;
+    /// <summary>Win32 successful operation code.</summary>
+    private const int ERROR_SUCCESS = 0;
+
+    // No records found for given DNS query.
+    private const int DNS_INFO_NO_RECORDS = 9501;
 
     /// <summary>
-    /// DNS Query client.
+    /// Map type of DnsRecord to DnsRecordType.
     /// </summary>
-    public static class DnsClient
-    {
-        /// <summary>Win32 successful operation code.</summary>
-        private const int ERROR_SUCCESS = 0;
-
-        // No records found for given DNS query.
-        private const int DNS_INFO_NO_RECORDS = 9501;
-
-        /// <summary>
-        /// Map type of DnsRecord to DnsRecordType.
-        /// </summary>
-        private static Lazy<Dictionary<Type, DnsRecordType>> typeToDnsTypeMap =
-            new Lazy<Dictionary<Type, DnsRecordType>>(() =>
-                // TODO: Dont forget to add new record types here!
-                new Dictionary<Type, DnsRecordType>
-                {
-                    { typeof(DnsARecord), DnsRecordType.A },
-                    { typeof(DnsAAAARecord), DnsRecordType.AAAA },
-                    { typeof(DnsCnameRecord), DnsRecordType.CNAME },
-                    { typeof(DnsPtrRecord), DnsRecordType.PTR },
-                    { typeof(DnsSoaRecord), DnsRecordType.SOA },
-                    { typeof(DnsSrvRecord), DnsRecordType.SRV },
-                    { typeof(DnsTxtRecord), DnsRecordType.TXT },
-                }, isThreadSafe: true);
-
-        public static bool IsSupported
-        {
-            get { return Environment.OSVersion.Platform == PlatformID.Win32NT; }
-        }
-
-        // TODO: Implement
-        public static IEnumerable<DnsRecord> DnsQuery(DnsRecordType recordType, string domain, IPAddress dnsServerAddress)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Perform DNS Query.
-        /// </summary>
-        /// <typeparam name="T">DnsRecord type.</typeparam>
-        /// <param name="domain">The domain.</param>
-        /// <param name="dnsServerAddress">IPAddress of DNS server to use (may be null).</param>
-        /// <returns>The DNS record list (never null but may be empty).</returns>
-        public static IEnumerable<T> DnsQuery<T>(string domain, IPAddress dnsServerAddress) where T : DnsRecord, new()
-        {
-            // Each strongly-typed DnsRecord type maps to a DnsRecordType enum.
-            DnsRecordType dnsRecordTypeToQuery = typeToDnsTypeMap.Value[typeof(T)];
-
-            // queryResultsPtr will point to unmanaged heap memory if DnsQuery succeeds.
-            IntPtr queryResultsPtr = IntPtr.Zero;
-
-            try
+    private static readonly Lazy<Dictionary<Type, DnsRecordType>> typeToDnsTypeMap =
+        new(() =>
+            // WARNING: Dont forget to add new record types here!
+            new Dictionary<Type, DnsRecordType>
             {
-                int errorCode = DnsNativeMethods.DnsQuery(
-                    domain,
-                    dnsServerAddress,
-                    dnsRecordTypeToQuery,
-                    ref queryResultsPtr);
+                { typeof(DnsARecord), DnsRecordType.A },
+                { typeof(DnsAAAARecord), DnsRecordType.AAAA },
+                { typeof(DnsCnameRecord), DnsRecordType.CNAME },
+                { typeof(DnsPtrRecord), DnsRecordType.PTR },
+                { typeof(DnsSoaRecord), DnsRecordType.SOA },
+                { typeof(DnsSrvRecord), DnsRecordType.SRV },
+                { typeof(DnsTxtRecord), DnsRecordType.TXT },
+            }, isThreadSafe: true);
 
-                if (errorCode == ERROR_SUCCESS)
+    public static bool IsSupported
+    {
+        get { return Environment.OSVersion.Platform == PlatformID.Win32NT; }
+    }
+
+    // TODO: Implement
+    public static IEnumerable<DnsRecord> DnsQuery(DnsRecordType recordType, string domain, IPAddress dnsServerAddress)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <summary>
+    /// Perform DNS Query.
+    /// </summary>
+    /// <typeparam name="T">DnsRecord type.</typeparam>
+    /// <param name="domain">The domain.</param>
+    /// <param name="dnsServerAddress">IPAddress of DNS server to use (may be null).</param>
+    /// <returns>The DNS record list (never null but may be empty).</returns>
+    public static IEnumerable<T> DnsQuery<T>(string domain, IPAddress? dnsServerAddress) where T : DnsRecord, new()
+    {
+        if (!IsSupported)
+        {
+            throw new PlatformNotSupportedException("This API is supported only on Windows.");
+        }
+
+        // Each strongly-typed DnsRecord type maps to a DnsRecordType enum.
+        DnsRecordType dnsRecordTypeToQuery = typeToDnsTypeMap.Value[typeof(T)];
+
+        // queryResultsPtr will point to unmanaged heap memory if DnsQuery succeeds.
+        IntPtr queryResultsPtr = IntPtr.Zero;
+
+        try
+        {
+            int errorCode = DnsNativeMethods.DnsQuery(
+                domain,
+                dnsServerAddress,
+                dnsRecordTypeToQuery,
+                ref queryResultsPtr);
+
+            if (errorCode == ERROR_SUCCESS)
+            {
+                DnsRecordHeader dnsRecordHeader;
+
+                // Interate through linked list of query result records
+                for (IntPtr recordPtr = queryResultsPtr; !recordPtr.Equals(IntPtr.Zero); recordPtr = dnsRecordHeader.NextRecord)
                 {
-                    DnsRecordHeader dnsRecordHeader;
+                    dnsRecordHeader = Marshal.PtrToStructure<DnsRecordHeader>(recordPtr);
 
-                    // Interate through linked list of query result records
-                    for (IntPtr recordPtr = queryResultsPtr; !recordPtr.Equals(IntPtr.Zero); recordPtr = dnsRecordHeader.NextRecord)
+                    T dnsRecord = new();
+
+                    if (dnsRecordHeader.RecordType == dnsRecord.RecordType)
                     {
-                        dnsRecordHeader = Marshal.PtrToStructure<DnsRecordHeader>(recordPtr);
+                        dnsRecord.Load(dnsRecordHeader, recordPtr);
 
-                        T dnsRecord = new T();
-
-                        if (dnsRecordHeader.RecordType == dnsRecord.RecordType)
-                        {
-                            dnsRecord.Load(dnsRecordHeader, recordPtr);
-
-                            yield return dnsRecord;
-                        }
+                        yield return dnsRecord;
                     }
                 }
-                else if (errorCode == DNS_INFO_NO_RECORDS)
-                {
-                    yield break;
-                }
-                else
-                {
-                    throw new DnsException(errorCode);
-                }
             }
-            finally
+            else if (errorCode == DNS_INFO_NO_RECORDS)
             {
-                if (queryResultsPtr != IntPtr.Zero)
-                {
-                    DnsNativeMethods.FreeDnsQueryResults(queryResultsPtr);
-                }
+                yield break;
+            }
+            else
+            {
+                throw new DnsException(errorCode);
+            }
+        }
+        finally
+        {
+            if (queryResultsPtr != IntPtr.Zero)
+            {
+                DnsNativeMethods.FreeDnsQueryResults(queryResultsPtr);
             }
         }
     }
